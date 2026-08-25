@@ -1,7 +1,7 @@
 import sqlite3
+from config import Config
 
-
-DATABASE_NAME = "smartlead.db"
+DATABASE_NAME = Config.DATABASE_URL.replace("sqlite:///", "", 1)
 
 
 def get_db():

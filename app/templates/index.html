@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RILVON | Teknoloji Asistanı</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            color: #1f2937;
+            min-height: 100vh;
+        }
+
+        header {
+            background: #111827;
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 24px;
+        }
+
+        header span {
+            color: #9ca3af;
+            font-size: 14px;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .hero {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+
+        .hero h2 {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .hero p {
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .card h3 {
+            margin-bottom: 20px;
+        }
+
+        textarea,
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        button {
+            background: #111827;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #374151;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            min-height: 50px;
+        }
+
+        @media (max-width: 800px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                padding: 20px;
+            }
+
+            .hero {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>RILVON</h1>
+    <span>Elektronik & Haberleşme Teknolojileri</span>
+</header>
+
+<main>
+
+    <section class="hero">
+        <h2>Teknoloji Asistanı</h2>
+        <p>
+            RILVON'un elektronik, haberleşme ve teknoloji hizmetleri
+            hakkında bilgi almak için yapay zekâ asistanımıza soru sorabilirsiniz.
+        </p>
+    </section>
+
+    <section class="grid">
+
+        <div class="card">
+            <h3>🤖 Yapay Zekâ Asistanı</h3>
+
+            <textarea
+                id="message"
+                placeholder="Örneğin: RILVON hangi hizmetleri sunuyor?"
+            ></textarea>
+
+            <button onclick="askAI()">Soruyu Gönder</button>
+
+            <div id="aiResult" class="result">
+                Henüz bir soru sorulmadı.
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📩 İletişim / Lead Formu</h3>
+
+            <input
+                id="name"
+                type="text"
+                placeholder="Ad Soyad"
+            >
+
+            <input
+                id="phone"
+                type="text"
+                placeholder="Telefon"
+            >
+
+            <textarea
+                id="leadMessage"
+                placeholder="Mesajınız"
+            ></textarea>
+
+            <button onclick="sendLead()">Bilgilerimi Gönder</button>
+
+            <div id="leadResult" class="result">
+                Form henüz gönderilmedi.
+            </div>
+        </div>
+
+    </section>
+
+</main>
+
+<script>
+
+async function askAI() {
+
+    const message = document.getElementById("message").value.trim();
+    const result = document.getElementById("aiResult");
+
+    if (!message) {
+        result.textContent = "Lütfen bir soru yazın.";
+        return;
+    }
+
+    result.textContent = "Yanıt hazırlanıyor...";
+
+    try {
+
+        const response = await fetch("/api/sohbet", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                mesaj: message,
+                gecmis: []
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.basari) {
+            result.textContent = data.cevap;
+        } else {
+            result.textContent = data.hata || "Bir hata oluştu.";
+        }
+
+    } catch (error) {
+
+        result.textContent =
+            "Sunucuya bağlanırken bir hata oluştu.";
+
+        console.error(error);
+    }
+}
+
+
+async function sendLead() {
+
+    const isim = document.getElementById("name").value.trim();
+    const telefon = document.getElementById("phone").value.trim();
+    const mesaj = document.getElementById("leadMessage").value.trim();
+    const result = document.getElementById("leadResult");
+
+    if (!isim || !telefon) {
+        result.textContent =
+            "Lütfen ad soyad ve telefon bilgilerinizi girin.";
+        return;
+    }
+
+    result.textContent = "Gönderiliyor...";
+
+    try {
+
+        const response = await fetch("/api/leads", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                isim: isim,
+                telefon: telefon,
+                mesaj: mesaj
+            })
+        });
+
+        const data = await response.json();
+console.log("DATA:", data);
+        if (data.basari) {
+            console.log("LEAD RESPONSE:", data);
+            result.textContent =
+                data.mesaj || "Bilgileriniz başarıyla kaydedildi.";
+
+            document.getElementById("name").value = "";
+            document.getElementById("phone").value = "";
+            document.getElementById("leadMessage").value = "";
+
+        } else {
+
+            result.textContent =
+                data.hata || "Lead kaydedilemedi.";
+        }
+
+    } catch (error) {
+
+        result.textContent =
+            "Sunucuya bağlanırken bir hata oluştu.";
+
+        console.error(error);
+    }
+}
+
+</script>
+
+</body>
+</html>
